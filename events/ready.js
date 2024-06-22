@@ -17,22 +17,37 @@ module.exports = {
         .reduce((a, b) => a + b.memberCount, 0)
         .toLocaleString()}`).yellow, (`Commands: ${client.commands.size}`).green);
 
+      // Function to update bot status and activity
+      const updateActivity = () => {
+        let activities = [
+          ` in ${client.guilds.cache.size} servers.`,
+          `The Holy Quran `
+        ];
+        
+        let activityIndex = 0;
+        client.user.setActivity(activities[activityIndex], { type: ActivityType.Listening });
+
+        // Update activity in a loop
+        setInterval(() => {
+          activityIndex = (activityIndex + 1) % activities.length;
+          client.user.setActivity(activities[activityIndex], { type: ActivityType.Listening });
+        }, 40000); // 60000 milliseconds = 1 minute
+      };
+
       // Initial set status and activity
       client.user.setStatus("idle");
-      
-      let activities = [
-        ` in ${client.guilds.cache.size} servers.`,
-        `The Holy Quran `
-      ];
-      
-      let activityIndex = 0;
-      client.user.setActivity(activities[activityIndex], { type: ActivityType.Listening });
+      updateActivity();
 
-      // Update activity in a loop
-      setInterval(() => {
-        activityIndex = (activityIndex + 1) % activities.length;
-        client.user.setActivity(activities[activityIndex], { type: ActivityType.Listening });
-      }, 40000  ); // 60000 milliseconds = 1 minute
+      // Listen for guildCreate and guildDelete events to update the activity
+      client.on('guildCreate', guild => {
+        console.log(`Joined a new guild: ${guild.name}`);
+        updateActivity();
+      });
+
+      client.on('guildDelete', guild => {
+        console.log(`Removed from a guild: ${guild.name}`);
+        updateActivity();
+      });
 
       // Check and join voice channels every 7 seconds
       setInterval(async () => {
